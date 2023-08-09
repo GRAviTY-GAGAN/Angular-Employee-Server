@@ -3,11 +3,21 @@ const { EmployeeModel } = require("../Models/employee.model");
 
 const employeeRouter = express.Router();
 
-employeeRouter.get("/", async (req, res) => {
-  try {
-    const employees = await EmployeeModel.find();
+employeeRouter.get("/:page", async (req, res) => {
+  const dataLimit = 5;
+  const page = req.params.page;
 
-    res.json({ msg: "Success", employees });
+  try {
+    const employees = await EmployeeModel.find()
+      .limit(dataLimit)
+      .skip(dataLimit * page);
+    const employeesCount = await EmployeeModel.find().countDocuments();
+
+    res.json({
+      msg: "Success",
+      employees,
+      maxPages: Math.ceil(employeesCount / dataLimit),
+    });
   } catch (error) {
     res.status(400).json({ msg: error.message });
   }
